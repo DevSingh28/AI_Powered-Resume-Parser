@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #121212, #1f1f1f);
+            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding-top: 200px;
+        }
+
+        h1, h2 {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        a, .btn {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .upload-area {
+            border: 2px dashed #6c757d;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            background: #2a2a2a;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .upload-area:hover {
+            border-color: #007bff;
+            background: #333333;
+            transform: scale(1.05);
+        }
+
+        .upload-area p {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .btn {
+            position: relative;
+            overflow: hidden;
+            border-radius: 30px;
+            padding: 10px 30px;
+            font-size: 1rem;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease-in-out;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+        }
+
+        .btn:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            transform: translateY(-3px);
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            transform: translateY(-3px);
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            transform: translateY(-3px);
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .loading-spinner.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input, textarea {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            background-color: #2a2a2a;
+            border-color: #007bff;
+            color: #ffffff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 900px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-control {
+            font-size: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #28a745;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease-in-out;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .upload-area {
+                padding: 25px;
+            }
+
+            .form-control {
+                font-size: 0.9rem;
+            }
+
+            h1, h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                font-size: 0.9rem;
+                padding: 5px 15px;
+            }
+        }
+    </style>
+</head>
+<body class="mb-5">
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center">Resume Parsing Application</h1>
+        <div id="upload-container" class="mt-4">
+            <form method="post" enctype="multipart/form-data" id="upload-form">
+                {% csrf_token %}
+                <div class="upload-area" id="upload-area">
+                    <p>Drag and drop your resume here or click to upload</p>
+                    <input type="file" name="file" id="file-input" class="d-none" accept=".pdf,.doc,.docx">
+                    <button type="button" class="btn btn-secondary mt-3" id="file-upload-btn">Choose File</button>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3 d-none" id="submit-btn">Upload Resume</button>
+            </form>
+        </div>
+
+        <div class="loading-spinner" id="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger mt-3">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if data %}
+        <h2 class="mt-4">Extracted Information</h2>
+        <form method="post" id="parsed-data-form">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="name">Name:</label>
+                        <input type="text" name="name" class="form-control" value="{{ data.name|default:'N/A' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="education">Education:</label>
+                        <textarea name="education" class="form-control" rows="3" required>{{ data.education|default:'N/A' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="experience">Experience:</label>
+                        <textarea name="experience" class="form-control" rows="4" required>{{ data.experience|default:'N/A' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="skills">Skills:</label>
+                        <input type="text" name="skills" class="form-control" value="{{ data.skills|default:'N/A' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email">Email:</label>
+                        <input type="email" name="email" class="form-control" value="{{ data.email|default:'N/A' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_number">Contact Number:</label>
+                        <input type="text" name="contact_number" class="form-control" value="{{ data.contact_number|default:'N/A' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location">Location:</label>
+                        <input type="text" name="location" class="form-control" value="{{ data.location|default:'N/A' }}" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3">
+                <button type="submit" class="btn btn-success" id="save-btn">Save Changes</button>
+                <button type="button" class="btn btn-info" id="download-json">Download JSON</button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="toast" id="toast">Saved Successfully!</div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const uploadForm = document.getElementById('upload-form');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const submitButton = document.getElementById('submit-btn');
+        const toast = document.getElementById('toast');
+        const saveButton = document.getElementById('save-btn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', () => {
+            submitButton.classList.remove('d-none');
+        });
+
+        uploadForm.addEventListener('submit', () => {
+            uploadArea.classList.add('d-none');
+            loadingSpinner.classList.add('active');
+        });
+
+        saveButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
