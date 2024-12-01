@@ -2,6 +2,8 @@
 
 This project is an AI-powered resume parser built using Django and other relevant libraries, capable of extracting key information from resumes (in various formats like PDF, DOCX, etc.). It is deployed on Render and can be accessed through a web interface.
 
+## Demo
+https://ai-powered-resume-parser.onrender.com/
 ## Features
 
 - Upload resumes in PDF/DOCX format.
